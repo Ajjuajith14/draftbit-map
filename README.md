@@ -1,50 +1,99 @@
-# Welcome to your Expo app 👋
+# Draftbit Map App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Beginner-friendly notes for explaining this Expo SDK 54 React Native TypeScript take-home project in an interview.
 
-## Get started
+## What This App Does
 
-1. Install dependencies
+This is a small map-focused mobile app called **Map Explorer**.
 
-   ```bash
-   npm install
-   ```
+It shows a set of Paris landmark locations, lets the user inspect them on a map, and loads richer details for a selected place using the OpenStreetMap Nominatim API.
 
-2. Start the app
+The assignment goal is not to build a huge production app. The goal is to show that the app has:
 
-   ```bash
-   npx expo start
-   ```
+- Expo SDK 54 with TypeScript
+- Expo Router navigation
+- A tab layout
+- A map screen with pins
+- A location details screen
+- A service layer for data
+- A custom hook for loading state
+- Reusable components
+- Constants for shared styling and map/card layout
 
-In the output, you'll find options to open the app in a
+## Screens
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- `app/(tabs)/index.tsx` is the Home tab. It introduces the app and has an Explore Map button.
+- `app/(tabs)/locations.tsx` is the Locations tab. It shows the map, markers, selected place details, and horizontal location cards.
+- `app/location-details/[id].tsx` is the detail screen. It is a dynamic route where the file name `[id]` means the URL contains a location id.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## User Flow
 
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```text
+App opens
+  -> Expo Router entry from package.json
+  -> app/_layout.tsx sets the root stack
+  -> app/(tabs)/_layout.tsx sets the bottom tabs
+  -> Home tab or Locations tab renders
+  -> Locations screen calls useLocations()
+  -> useLocations() calls getLocations()
+  -> valid coordinates are filtered
+  -> OpenStreetMapView renders markers
+  -> user taps marker or card
+  -> selected marker/card updates
+  -> getLocationById() loads Nominatim details
+  -> detail panel updates
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+The closest React web comparison is:
 
-## Learn more
+```text
+React web:
+index.html -> main.tsx -> root.render(<App />)
 
-To learn more about developing your project with Expo, look at the following resources:
+Expo Router:
+package.json main: expo-router/entry -> app/_layout.tsx -> file-based screens
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Quick Start
 
-## Join the community
+```bash
+npm install
+npx expo start
+```
 
-Join our community of developers creating universal apps.
+Then:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- Press `i` for iOS simulator.
+- Press `a` for Android emulator.
+- Run `npm run lint` to check linting.
+
+Other scripts:
+
+```bash
+npm run android
+npm run ios
+npm run web
+```
+
+There is no Cloudflare Worker folder in this repo right now, so `wrangler deploy` does not apply unless a worker is added later.
+
+## Important Implementation Note
+
+This project uses `react-native-webview` with Leaflet and OpenStreetMap tiles in `components/OpenStreetMapView.tsx`.
+
+It does **not** currently use `react-native-maps` / native `MapView`, even though common map interview questions may mention `MapView`, `Marker`, and `initialRegion`. For this project, the equivalent responsibilities are handled by:
+
+- `WebView` as the native wrapper
+- Leaflet inside the HTML string
+- `fitBounds`, `flyTo`, and marker creation inside the embedded script
+- messages between React Native and the WebView
+
+## Where To Read Next
+
+Read [PROJECT_NOTES.md](./PROJECT_NOTES.md) for the full interview prep guide, including file-by-file explanations, API flow, navigation flow, debugging, and likely live-coding follow-up features.
+
+## Expo SDK 54 References Checked
+
+- Expo SDK 54 reference: https://docs.expo.dev/versions/v54.0.0/
+- Expo Router UI SDK 54 reference: https://docs.expo.dev/versions/v54.0.0/sdk/router-ui/
+- react-native-maps SDK 54 reference: https://docs.expo.dev/versions/v54.0.0/sdk/map-view/
